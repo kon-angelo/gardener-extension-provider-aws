@@ -1,3 +1,4 @@
+{{- if .Values.volumeModifierEnabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -8,3 +9,4 @@ rules:
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "watch", "list", "delete", "update", "create"]
+{{- end }}

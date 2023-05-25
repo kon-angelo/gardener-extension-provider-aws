@@ -1,3 +1,4 @@
+{{- if .Values.volumeModifierEnabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -11,3 +12,4 @@ subjects:
   - kind: ServiceAccount
     name: csi-volume-modifier
     namespace: {{ .Release.Namespace }}
+{{- end }}

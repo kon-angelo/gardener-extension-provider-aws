@@ -48,4 +48,12 @@ type Storage struct {
 	// managed by Gardener.
 	// Defaults to true.
 	ManagedDefaultClass *bool
+	// VolumeModifier contains configuration for the aws-csi-volume-modifier.
+	VolumeModifier *VolumeModifier
+}
+
+// VolumeModifier contains configuration for the aws-csi-volume-modifier.
+type VolumeModifier struct {
+	// Enabled controls if the aws-csi-volume-modifier is deployed alongside the EBS driver.
+	Enabled bool
 }

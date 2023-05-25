@@ -135,8 +135,8 @@ const (
 	LBReadvertiserDeploymentName = "aws-lb-readvertiser"
 	// CSISnapshotValidationName is the constant for the name of the csi-snapshot-validation-webhook component.
 	CSISnapshotValidationName = "csi-snapshot-validation"
-	// CSIVolumeModifier is the constant for the name of the csi-volume-modifier.
-	CSIVolumeModifier = "csi-volume-modifier"
+	// CSIVolumeModifierName is the constant for the name of the csi-volume-modifier.
+	CSIVolumeModifierName = "csi-volume-modifier"
 )
 
 var (

@@ -1,3 +1,4 @@
+{{- if .Values.volumeModifierEnabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -12,4 +13,5 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: {{ include "csi-driver-node.extensionsGroup" . }}:{{ include "csi-driver-node.name" . }}:csi-volume-modifier
+{{- end }}
 

@@ -77,7 +77,7 @@ spec:
           mountPath: {{ .Values.socketPath }}
         - name: cloudprovider
           mountPath: /srv/cloudprovider
-
+{{- if .Values.volumeModifier.enabled }}
       - name: aws-csi-volume-modifier
         image: {{ index .Values.images "csi-volume-modifier" }}
         imagePullPolicy: IfNotPresent
@@ -101,7 +101,7 @@ spec:
           - mountPath: /var/run/secrets/gardener.cloud/shoot/generic-kubeconfig
             name: kubeconfig-csi-volume-modifier
             readOnly: true
-
+{{- end }}
       - name: aws-csi-provisioner
         image: {{ index .Values.images "csi-provisioner" }}
         imagePullPolicy: IfNotPresent
@@ -295,6 +295,7 @@ spec:
                     path: token
                 name: shoot-access-csi-resizer
                 optional: false
+{{- if .Values.volumeModifier.enabled }}
       - name: kubeconfig-csi-volume-modifier
         projected:
           defaultMode: 420
@@ -311,3 +312,4 @@ spec:
                     path: token
                 name: shoot-access-csi-volume-modifier
                 optional: false
+{{- end }}

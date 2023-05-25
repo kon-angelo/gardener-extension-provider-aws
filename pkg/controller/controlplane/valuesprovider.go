@@ -101,7 +101,8 @@ func shootAccessSecretsFunc(namespace string) []*gutil.ShootAccessSecret {
 		gutil.NewShootAccessSecret(aws.CSIResizerName, namespace),
 		gutil.NewShootAccessSecret(aws.CSISnapshotControllerName, namespace),
 		gutil.NewShootAccessSecret(aws.CSISnapshotValidationName, namespace),
-		gutil.NewShootAccessSecret(aws.CSIVolumeModifier, namespace),
+		// TODO(AK) generate the volume-modifier secret conditionally if the volume-modifier is needed.
+		gutil.NewShootAccessSecret(aws.CSIVolumeModifierName, namespace),
 	}
 }
 
@@ -235,10 +236,10 @@ var (
 					{Type: &rbacv1.ClusterRole{}, Name: aws.UsernamePrefix + aws.CSISnapshotValidationName},
 					{Type: &rbacv1.ClusterRoleBinding{}, Name: aws.UsernamePrefix + aws.CSISnapshotValidationName},
 					// csi-volume-modifier
-					{Type: &rbacv1.ClusterRole{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifier},
-					{Type: &rbacv1.ClusterRoleBinding{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifier},
-					{Type: &rbacv1.Role{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifier},
-					{Type: &rbacv1.RoleBinding{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifier},
+					{Type: &rbacv1.ClusterRole{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifierName},
+					{Type: &rbacv1.ClusterRoleBinding{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifierName},
+					{Type: &rbacv1.Role{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifierName},
+					{Type: &rbacv1.RoleBinding{}, Name: aws.UsernamePrefix + aws.CSIVolumeModifierName},
 				},
 			},
 		},
@@ -348,7 +349,7 @@ func (vp *valuesProvider) GetControlPlaneShootChartValues(
 }
 
 // GetControlPlaneShootCRDsChartValues returns the values for the control plane shoot CRDs chart applied by the generic actuator.
-// Currently the provider extension does not specify a control plane shoot CRDs chart. That's why we simply return empty values.
+// Currently, the provider extension does not specify a control plane shoot CRDs chart. That's why we simply return empty values.
 func (vp *valuesProvider) GetControlPlaneShootCRDsChartValues(
 	_ context.Context,
 	_ *extensionsv1alpha1.ControlPlane,
@@ -454,7 +455,7 @@ func getControlPlaneChartValues(
 		return nil, err
 	}
 
-	csi, err := getCSIControllerChartValues(cp, cluster, secretsReader, checksums, scaledDown)
+	csi, err := getCSIControllerChartValues(cp, cpConfig, cluster, secretsReader, checksums, scaledDown)
 	if err != nil {
 		return nil, err
 	}
@@ -548,6 +549,7 @@ func getCRCChartValues(
 // getCSIControllerChartValues collects and returns the CSIController chart values.
 func getCSIControllerChartValues(
 	cp *extensionsv1alpha1.ControlPlane,
+	cpConfig *apisaws.ControlPlaneConfig,
 	cluster *extensionscontroller.Cluster,
 	secretsReader secretsmanager.Reader,
 	checksums map[string]string,
@@ -558,7 +560,7 @@ func getCSIControllerChartValues(
 		return nil, fmt.Errorf("secret %q not found", csiSnapshotValidationServerName)
 	}
 
-	return map[string]interface{}{
+	values := map[string]interface{}{
 		"enabled":  true,
 		"replicas": extensionscontroller.GetControlPlaneReplicas(cluster, scaledDown, 1),
 		"region":   cp.Spec.Region,
@@ -575,7 +577,13 @@ func getCSIControllerChartValues(
 			},
 			"topologyAwareRoutingEnabled": gardencorev1beta1helper.IsTopologyAwareRoutingForShootControlPlaneEnabled(cluster.Seed, cluster.Shoot),
 		},
-	}, nil
+	}
+	if volumeModifierEnabled := cpConfig.Storage != nil && cpConfig.Storage.VolumeModifier != nil && cpConfig.Storage.VolumeModifier.Enabled; volumeModifierEnabled {
+		values["volumeModifier"] = map[string]any{
+			"enabled": true,
+		}
+	}
+	return values, nil
 }
 
 // getControlPlaneShootChartValues collects and returns the control plane shoot chart values.
@@ -604,7 +612,8 @@ func getControlPlaneShootChartValues(
 			"url":      "https://" + aws.CSISnapshotValidationName + "." + cp.Namespace + "/volumesnapshot",
 			"caBundle": string(caSecret.Data[secretutils.DataKeyCertificateBundle]),
 		},
-		"pspDisabled": gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot),
+		"pspDisabled":           gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot),
+		"volumeModifierEnabled": cpConfig.Storage != nil && cpConfig.Storage.VolumeModifier != nil && cpConfig.Storage.VolumeModifier.Enabled,
 	}
 
 	if value, ok := cluster.Shoot.Annotations[aws.VolumeAttachLimit]; ok {

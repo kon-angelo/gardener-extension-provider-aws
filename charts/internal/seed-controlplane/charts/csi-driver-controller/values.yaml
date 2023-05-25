@@ -114,4 +114,5 @@ csiSnapshotValidationWebhook:
   topologyAwareRoutingEnabled: false
 
 volumeModifier:
+  enabled: false
   log: 2

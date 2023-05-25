@@ -52,3 +52,5 @@ vpa:
       maxAllowed:
         cpu: 1
         memory: 3G
+
+volumeModifierEnabled: false

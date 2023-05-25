@@ -54,4 +54,13 @@ type Storage struct {
 	// Defaults to true.
 	// +optional
 	ManagedDefaultClass *bool `json:"managedDefaultClass,omitempty"`
+
+	// VolumeModifier contains configuration for the aws-csi-volume-modifier.
+	VolumeModifier *VolumeModifier `json:"volumeModifier,omitempty"`
+}
+
+// VolumeModifier contains configuration for the aws-csi-volume-modifier.
+type VolumeModifier struct {
+	// Enabled controls if the aws-csi-volume-modifier is deployed alongside the EBS driver.
+	Enabled bool `json:"enabled"`
 }
