@@ -149,6 +149,7 @@ var (
 		SubCharts: []*chart.Chart{
 			{
 				Name:   aws.CloudControllerManagerName,
+				Path:   filepath.Join(charts.InternalChartsPath, "seed-controlplane", aws.CloudControllerManagerName),
 				Images: []string{aws.CloudControllerManagerImageName},
 				Objects: []*chart.Object{
 					{Type: &corev1.Service{}, Name: aws.CloudControllerManagerName},
@@ -160,6 +161,7 @@ var (
 			{
 				Name:   aws.AWSCustomRouteControllerName,
 				Images: []string{aws.AWSCustomRouteControllerImageName},
+				Path:   filepath.Join(charts.InternalChartsPath, "seed-controlplane", aws.AWSCustomRouteControllerImageName),
 				Objects: []*chart.Object{
 					{Type: &appsv1.Deployment{}, Name: aws.AWSCustomRouteControllerName},
 					{Type: &rbacv1.Role{}, Name: aws.AWSCustomRouteControllerName},
@@ -167,6 +169,7 @@ var (
 					{Type: &corev1.ServiceAccount{}, Name: aws.AWSCustomRouteControllerName},
 					{Type: &autoscalingv1.VerticalPodAutoscaler{}, Name: aws.AWSCustomRouteControllerName + "-vpa"},
 				},
+				SubCharts: nil,
 			},
 			{
 				Name:   aws.AWSLoadBalancerControllerName,
@@ -212,6 +215,12 @@ var (
 		EmbeddedFS: &charts.InternalChart,
 		Path:       filepath.Join(charts.InternalChartsPath, "shoot-system-components"),
 		SubCharts: []*chart.Chart{
+			{
+				Name: aws.CloudControllerManagerName,
+				Objects: []*chart.Object{
+					{Type: &rbacv1.ClusterRoleBinding{}, Name: "extensions.gardener.cloud:provider-aws:cloud-controller-manager"},
+				},
+			},
 			{
 				Name: aws.AWSCustomRouteControllerName,
 				Objects: []*chart.Object{
