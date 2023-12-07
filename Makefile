@@ -49,7 +49,7 @@ endif
 
 TOOLS_DIR := hack/tools
 include vendor/github.com/gardener/gardener/hack/tools.mk
-#VGOPATH := $(REPO_ROOT)/$(VGOPATH)
+VGOPATH := $(REPO_ROOT)/$(VGOPATH)
 
 #########################################
 # Rules for local development scenarios #
@@ -129,7 +129,7 @@ tools-for-generate: $(CONTROLLER_GEN) $(GEN_CRD_API_REFERENCE_DOCS) $(HELM) $(MO
 .PHONY: generate
 generate:
 	@GO111MODULE=off hack/update-codegen.sh
-	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/generate-sequential.sh ./charts/... ./cmd/... ./example/... ./pkg/...
+	@VGOPATH=$(VGOPATH) $(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/generate-sequential.sh ./charts/... ./cmd/... ./example/... ./pkg/...
 	$(MAKE) format
 	
 .PHONY: format

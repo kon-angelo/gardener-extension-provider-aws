@@ -57,6 +57,7 @@ trap 'rm -rf "$VIRTUAL_GOPATH"' EXIT
 # Setup virtual GOPATH so the codegen tools work as expected.
 (cd "$SCRIPT_DIR/.."; go mod download && "$VGOPATH" -o "$VIRTUAL_GOPATH")
 
+
 export GOROOT="${GOROOT:-"$(go env GOROOT)"}"
 export GOPATH="$VIRTUAL_GOPATH"
 export GO111MODULE=off
@@ -108,10 +109,12 @@ generate_group () {
   local group="$1"
   echo "Generating CRDs for $group group"
 
+echo LULUL ${VIRTUAL_GOPATH}
   local package="$(get_group_package "$group")"
   if [ -z "$package" ] ; then
     exit 1
   fi
+  echo LUL $(go list -f '{{ .Dir }}' "$package")
   local package_path="$(go list -f '{{ .Dir }}' "$package")"
   if [ -z "$package_path" ] ; then
     exit 1
